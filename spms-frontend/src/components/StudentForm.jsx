@@ -18,13 +18,15 @@ export default function StudentForm({ onDone, onError }) {
     <form className="card" onSubmit={submit}>
       <h2>Add a student</h2>
       <p className="hint">Roll numbers must be unique.</p>
-      <div className="field"><label htmlFor="roll">Roll number</label>
-        <input id="roll" value={form.roll_no} onChange={set('roll_no')} placeholder="e.g. IT2026-014" /></div>
-      <div className="field"><label htmlFor="name">Full name</label>
-        <input id="name" value={form.name} onChange={set('name')} placeholder="e.g. Asha Mehta" /></div>
-      <div className="field"><label htmlFor="course">Course</label>
-        <input id="course" value={form.course} onChange={set('course')} placeholder="e.g. BSc IT" /></div>
-      <button className="btn teal" type="submit">Add student</button>
+      <div className="form-row">
+        <div className="field"><label htmlFor="roll">Roll number</label>
+          <input id="roll" value={form.roll_no} onChange={set('roll_no')} placeholder="e.g. IT2026-014" /></div>
+        <div className="field"><label htmlFor="name">Full name</label>
+          <input id="name" value={form.name} onChange={set('name')} placeholder="e.g. Asha Mehta" /></div>
+        <div className="field"><label htmlFor="course">Course</label>
+          <input id="course" value={form.course} onChange={set('course')} placeholder="e.g. BSc IT" /></div>
+        <button className="btn teal" type="submit">Add student</button>
+      </div>
     </form>
   )
 }

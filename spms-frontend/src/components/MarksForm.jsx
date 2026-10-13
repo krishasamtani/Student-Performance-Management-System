@@ -1,16 +1,21 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api } from '../api'
 import StudentSelect from './StudentSelect'
 
 export default function MarksForm({ students, studentId, onStudent, onDone, onError }) {
   const [subject, setSubject] = useState('')
   const [score, setScore] = useState('')
+  const [known, setKnown] = useState([])
+
+  const loadSubjects = () => api.subjects().then(setKnown).catch(() => setKnown([]))
+  useEffect(() => { loadSubjects() }, [])
 
   async function submit(e) {
     e.preventDefault()
     try {
       await api.addMark({ student_id: Number(studentId), subject, score })
       setSubject(''); setScore('')
+      loadSubjects()
       onDone('Marks saved')
     } catch (err) { onError(err.message) }
   }
@@ -18,10 +23,11 @@ export default function MarksForm({ students, studentId, onStudent, onDone, onEr
   return (
     <form className="card" onSubmit={submit}>
       <h2>Enter marks</h2>
-      <p className="hint">Scores are out of 100.</p>
+      <p className="hint">Scores are out of 100. Entering a subject again updates its score.</p>
       <StudentSelect students={students} value={studentId} onChange={onStudent} />
       <div className="field"><label htmlFor="subject">Subject</label>
-        <input id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="e.g. Mathematics" /></div>
+        <input id="subject" list="subject-list" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="e.g. Mathematics" />
+        <datalist id="subject-list">{known.map((s) => <option key={s} value={s} />)}</datalist></div>
       <div className="field"><label htmlFor="score">Score</label>
         <input id="score" type="number" min="0" max="100" value={score} onChange={(e) => setScore(e.target.value)} placeholder="0 to 100" /></div>
       <button className="btn teal" type="submit">Save marks</button>

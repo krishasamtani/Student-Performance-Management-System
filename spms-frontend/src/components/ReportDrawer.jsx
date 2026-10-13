@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
-import { api } from '../api'
+import { api, downloadReportPdf } from '../api'
 import Icon from './Icon'
 import ProgressBar, { toneFor } from './ProgressBar'
 
 export default function ReportDrawer({ studentId, onClose }) {
   const [r, setR] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     api.report(studentId).then(setR).catch(() => setR(null))
@@ -16,8 +18,19 @@ export default function ReportDrawer({ studentId, onClose }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
+  async function download() {
+    setBusy(true)
+    setError('')
+    try {
+      await downloadReportPdf(studentId, `report-${r.roll_no}.pdf`)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const subjects = r ? Object.entries(r.subjects) : []
-  const attendanceHistory = r ? r.attendance_history || [] : []
 
   return (
     <>
@@ -32,37 +45,30 @@ export default function ReportDrawer({ studentId, onClose }) {
         </div>
         {r && (
           <>
+            {r.at_risk && (
+              <div className="risk-banner">
+                <b>At risk</b>
+                <ul>{r.risk_reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>
+              </div>
+            )}
             <div className="report-hero">
               <div className={`report-grade g-${toneFor(r.average)}`}>{r.grade}</div>
               <div className="report-meta">
                 <div>Average score: <b>{r.average}</b></div>
                 <div>Attendance: <b>{r.attendance_percent}%</b></div>
-                <div className="sub">{attendanceHistory.length} days recorded</div>
+                <div className="sub">{r.days_recorded} days recorded</div>
               </div>
             </div>
-
             <h3>Subject scores</h3>
             {subjects.length === 0 ? (
               <div className="empty"><b>No marks yet</b>Enter marks to build this report.</div>
             ) : (
               subjects.map(([name, score]) => <ProgressBar key={name} label={name} value={score} />)
             )}
-
-            <h3 style={{ marginTop: '24px' }}>Attendance history</h3>
-            {attendanceHistory.length === 0 ? (
-              <div className="empty"><b>No attendance recorded</b>Save entries to track presence.</div>
-            ) : (
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {attendanceHistory.map((att, i) => (
-                  <li key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.06)', fontSize: '14px' }}>
-                    <span>{att.date}</span>
-                    <b style={{ color: att.present ? '#10b981' : '#ef4444' }}>
-                      {att.present ? 'Present' : 'Absent'}
-                    </b>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <button className="btn teal download" onClick={download} disabled={busy}>
+              {busy ? 'Creating PDF' : 'Download PDF report card'}
+            </button>
+            {error && <p className="form-error">{error}</p>}
           </>
         )}
       </aside>

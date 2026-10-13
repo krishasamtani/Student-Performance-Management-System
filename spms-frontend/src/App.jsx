@@ -8,7 +8,11 @@ import Students from './pages/Students'
 import Marks from './pages/Marks'
 import Attendance from './pages/Attendance'
 
-const emptySummary = { students: 0, average_score: 0, average_attendance: 0, subjects: [], top: [] }
+const emptySummary = {
+  students: 0, average_score: 0, average_attendance: 0, subjects: [], top: [],
+  grade_distribution: [], attendance_trend: [], at_risk: [], at_risk_count: 0,
+  risk_rules: { score: 50, attendance: 75 },
+}
 
 export default function App() {
   const [page, setPage] = useState('dashboard')
