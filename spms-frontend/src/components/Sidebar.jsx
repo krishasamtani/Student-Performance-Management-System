@@ -1,13 +1,30 @@
 import Icon from './Icon'
 
-const items = [
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'students', label: 'Students' },
-  { id: 'marks', label: 'Marks' },
-  { id: 'attendance', label: 'Attendance' },
+const groups = [
+  { label: 'Overview', items: [{ id: 'dashboard', label: 'Dashboard' }] },
+  {
+    label: 'Manage',
+    items: [
+      { id: 'students', label: 'Students' },
+      { id: 'marks', label: 'Marks' },
+      { id: 'attendance', label: 'Attendance' },
+      { id: 'courses', label: 'Courses' },
+    ],
+  },
+  {
+    label: 'Insights',
+    items: [
+      { id: 'predictions', label: 'Predictions' },
+      { id: 'what-if', label: 'What-if lab', icon: 'whatif' },
+      { id: 'model', label: 'Model' },
+    ],
+  },
+  { label: 'Data', items: [{ id: 'data', label: 'Import & export' }] },
 ]
 
-export default function Sidebar({ page, onNavigate }) {
+export default function Sidebar({ page }) {
+  // A student's profile page belongs to the Students section.
+  const active = page === 'student' ? 'students' : page
   return (
     <aside className="sidebar">
       <div className="brand">
@@ -18,14 +35,19 @@ export default function Sidebar({ page, onNavigate }) {
         </div>
       </div>
       <nav className="nav" aria-label="Main">
-        {items.map((it) => (
-          <button key={it.id} className={page === it.id ? 'active' : ''}
-            onClick={() => onNavigate(it.id)} aria-current={page === it.id ? 'page' : undefined}>
-            <Icon name={it.id} /> {it.label}
-          </button>
+        {groups.map((g) => (
+          <div className="nav-group" key={g.label}>
+            <div className="nav-label">{g.label}</div>
+            {g.items.map((it) => (
+              <a key={it.id} href={`#/${it.id}`} className={active === it.id ? 'active' : ''}
+                aria-current={active === it.id ? 'page' : undefined}>
+                <Icon name={it.icon || it.id} /> {it.label}
+              </a>
+            ))}
+          </div>
         ))}
       </nav>
-      <div className="sidebar-foot">Flask · React · Docker</div>
+      <div className="sidebar-foot">Flask · React · scikit-learn</div>
     </aside>
   )
 }

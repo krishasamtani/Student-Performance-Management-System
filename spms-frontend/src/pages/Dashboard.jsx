@@ -4,8 +4,9 @@ import GradeChart from '../components/GradeChart'
 import AttendanceTrend from '../components/AttendanceTrend'
 import SubjectChart from '../components/SubjectChart'
 import TopPerformers from '../components/TopPerformers'
+import PredictionTeaser from '../components/PredictionTeaser'
 
-export default function Dashboard({ summary, onReport }) {
+export default function Dashboard({ summary, version, onReport }) {
   return (
     <>
       <div className="page-head">
@@ -19,6 +20,7 @@ export default function Dashboard({ summary, onReport }) {
         <StatCard label="Students at risk" value={summary.at_risk_count} tone="red" />
       </div>
       <AtRiskList students={summary.at_risk} rules={summary.risk_rules} onOpen={onReport} />
+      <PredictionTeaser version={version} />
       <div className="grid-2 even">
         <GradeChart data={summary.grade_distribution} />
         <AttendanceTrend data={summary.attendance_trend} target={summary.risk_rules.attendance} />

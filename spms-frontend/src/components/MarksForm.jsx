@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import StudentSelect from './StudentSelect'
+import { EXAMS } from '../utils'
 
 export default function MarksForm({ students, studentId, onStudent, onDone, onError }) {
   const [subject, setSubject] = useState('')
   const [score, setScore] = useState('')
+  const [exam, setExam] = useState('Mid-term')
   const [known, setKnown] = useState([])
 
   const loadSubjects = () => api.subjects().then(setKnown).catch(() => setKnown([]))
@@ -13,7 +15,7 @@ export default function MarksForm({ students, studentId, onStudent, onDone, onEr
   async function submit(e) {
     e.preventDefault()
     try {
-      await api.addMark({ student_id: Number(studentId), subject, score })
+      await api.addMark({ student_id: Number(studentId), subject, score, exam_type: exam })
       setSubject(''); setScore('')
       loadSubjects()
       onDone('Marks saved')
@@ -23,8 +25,12 @@ export default function MarksForm({ students, studentId, onStudent, onDone, onEr
   return (
     <form className="card" onSubmit={submit}>
       <h2>Enter marks</h2>
-      <p className="hint">Scores are out of 100. Entering a subject again updates its score.</p>
+      <p className="hint">Scores are out of 100. Entering the same subject and exam again updates the score.</p>
       <StudentSelect students={students} value={studentId} onChange={onStudent} />
+      <div className="field"><label htmlFor="exam">Exam</label>
+        <select id="exam" value={exam} onChange={(e) => setExam(e.target.value)}>
+          {EXAMS.map((x) => <option key={x} value={x}>{x}</option>)}
+        </select></div>
       <div className="field"><label htmlFor="subject">Subject</label>
         <input id="subject" list="subject-list" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="e.g. Mathematics" />
         <datalist id="subject-list">{known.map((s) => <option key={s} value={s} />)}</datalist></div>

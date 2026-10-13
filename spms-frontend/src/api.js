@@ -10,17 +10,28 @@ async function request(url, method = 'GET', body) {
 }
 
 // Fetch (not a plain link) so the dev-server proxy forwards the request to Flask.
-export async function downloadReportPdf(id, filename) {
-  const res = await fetch(`/api/students/${id}/report.pdf`)
-  if (!res.ok) throw new Error('Could not create the PDF report card')
-  const url = URL.createObjectURL(await res.blob())
+export async function downloadFile(url, filename) {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error('Could not create the download')
+  const href = URL.createObjectURL(await res.blob())
   const link = document.createElement('a')
-  link.href = url
+  link.href = href
   link.download = filename
   document.body.appendChild(link)
   link.click()
   link.remove()
-  URL.revokeObjectURL(url)
+  URL.revokeObjectURL(href)
+}
+
+export const downloadReportPdf = (id, filename) => downloadFile(`/api/students/${id}/report.pdf`, filename)
+
+export async function importCsv(kind, file) {
+  const body = new FormData()
+  body.append('file', file)
+  const res = await fetch(`/api/import/${kind}`, { method: 'POST', body })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || 'Import failed')
+  return data
 }
 
 export const api = {
@@ -35,6 +46,13 @@ export const api = {
   updateMark: (id, score) => request(`/api/marks/${id}`, 'PUT', { score }),
   deleteMark: (id) => request(`/api/marks/${id}`, 'DELETE'),
   attendanceFor: (date) => request(`/api/attendance?date=${date}`),
+  courses: () => request('/api/courses'),
+  studentAttendance: (id, month) => request(`/api/students/${id}/attendance?month=${month}`),
+  mlModel: () => request('/api/ml/model'),
+  mlRetrain: (source) => request('/api/ml/retrain', 'POST', { source }),
+  mlPredict: (midterm_avg, attendance) => request('/api/ml/predict', 'POST', { midterm_avg, attendance }),
+  mlPredictions: () => request('/api/ml/predictions'),
   saveAttendance: (date, records) => request('/api/attendance/bulk', 'POST', { date, records }),
   addMark: (m) => request('/api/marks', 'POST', m),
 }
+

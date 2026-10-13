@@ -24,15 +24,15 @@ export default function MarksList({ studentId, version, onDone, onError }) {
     try {
       await api.updateMark(m.id, draft)
       setEditId(null)
-      onDone(`${m.subject} score updated`)
+      onDone(`${m.subject} (${m.exam_type}) score updated`)
     } catch (err) { onError(err.message) }
   }
 
   async function remove(m) {
-    if (!window.confirm(`Delete the ${m.subject} marks?`)) return
+    if (!window.confirm(`Delete the ${m.subject} ${m.exam_type} marks?`)) return
     try {
       await api.deleteMark(m.id)
-      onDone(`${m.subject} marks deleted`)
+      onDone(`${m.subject} (${m.exam_type}) marks deleted`)
     } catch (err) { onError(err.message) }
   }
 
@@ -50,11 +50,12 @@ export default function MarksList({ studentId, version, onDone, onError }) {
       ) : (
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Subject</th><th>Score</th><th /></tr></thead>
+            <thead><tr><th>Subject</th><th>Exam</th><th>Score</th><th /></tr></thead>
             <tbody>
               {marks.map((m) => (
                 <tr key={m.id}>
                   <td className="name">{m.subject}</td>
+                  <td><span className="pill none">{m.exam_type}</span></td>
                   <td>
                     {editId === m.id ? (
                       <input className="inline-input" type="number" min="0" max="100" autoFocus

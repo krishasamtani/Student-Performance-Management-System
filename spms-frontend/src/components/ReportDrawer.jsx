@@ -59,6 +59,12 @@ export default function ReportDrawer({ studentId, onClose }) {
                 <div className="sub">{r.days_recorded} days recorded</div>
               </div>
             </div>
+            {r.prediction && r.prediction.available && (
+              <div className="outlook">
+                <span>Predicted final <b>{r.prediction.predicted_final}</b></span>
+                <span>Chance of failing <b>{r.prediction.fail_probability}%</b></span>
+              </div>
+            )}
             <h3>Subject scores</h3>
             {subjects.length === 0 ? (
               <div className="empty"><b>No marks yet</b>Enter marks to build this report.</div>
@@ -69,6 +75,7 @@ export default function ReportDrawer({ studentId, onClose }) {
               {busy ? 'Creating PDF' : 'Download PDF report card'}
             </button>
             {error && <p className="form-error">{error}</p>}
+            <a className="btn ghost download-link" href={`#/student/${studentId}`} onClick={onClose}>Open full profile</a>
           </>
         )}
       </aside>
