@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import ProgressBar from '../components/ProgressBar'
+import LoadError from '../components/LoadError'
 
 export default function Courses({ version }) {
   const [rows, setRows] = useState(null)
+  const [error, setError] = useState('')
 
-  useEffect(() => {
-    let stale = false
-    api.courses().then((d) => { if (!stale) setRows(d) }).catch(() => { if (!stale) setRows([]) })
-    return () => { stale = true }
-  }, [version])
+  const load = () => {
+    setError('')
+    return api.courses().then(setRows).catch((e) => setError(e.message))
+  }
+
+  useEffect(() => { load() }, [version]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const scored = (rows || []).filter((c) => c.average_score != null)
   const attended = (rows || []).filter((c) => c.average_attendance != null)
@@ -20,7 +23,9 @@ export default function Courses({ version }) {
         <h1>Courses</h1>
         <p>Compare how each course is performing.</p>
       </div>
-      {rows === null ? (
+      {error ? (
+        <LoadError title="Could not load courses" message={error} onRetry={load} />
+      ) : rows === null ? (
         <div className="card"><div className="empty">Loading courses</div></div>
       ) : rows.length === 0 ? (
         <div className="card"><div className="empty"><b>No courses yet</b>Courses appear once you add students.</div></div>

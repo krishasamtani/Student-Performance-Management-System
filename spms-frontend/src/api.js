@@ -4,7 +4,14 @@ async function request(url, method = 'GET', body) {
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
   })
-  const data = res.status === 204 ? {} : await res.json()
+  let data = {}
+  if (res.status !== 204) {
+    try {
+      data = await res.json()
+    } catch {
+      throw new Error(`The server sent an unexpected response (${res.status}). Is the backend updated and running?`)
+    }
+  }
   if (!res.ok) throw new Error(data.error || 'Something went wrong')
   return data
 }
@@ -12,7 +19,7 @@ async function request(url, method = 'GET', body) {
 // Fetch (not a plain link) so the dev-server proxy forwards the request to Flask.
 export async function downloadFile(url, filename) {
   const res = await fetch(url)
-  if (!res.ok) throw new Error('Could not create the download')
+  if (!res.ok) throw new Error(`The download failed (${res.status}). Is the backend updated and running?`)
   const href = URL.createObjectURL(await res.blob())
   const link = document.createElement('a')
   link.href = href
@@ -55,4 +62,3 @@ export const api = {
   saveAttendance: (date, records) => request('/api/attendance/bulk', 'POST', { date, records }),
   addMark: (m) => request('/api/marks', 'POST', m),
 }
-

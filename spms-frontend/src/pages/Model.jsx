@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api'
 import StatCard from '../components/StatCard'
 import ScatterPlot from '../components/ScatterPlot'
 import ConfusionMatrix from '../components/ConfusionMatrix'
+import LoadError from '../components/LoadError'
 
 const pct = (v) => `${Math.round(v * 100)}%`
 
@@ -10,12 +11,14 @@ export default function Model({ version, onDone, onError }) {
   const [m, setM] = useState(null)
   const [source, setSource] = useState('auto')
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
 
-  useEffect(() => {
-    let stale = false
-    api.mlModel().then((d) => { if (!stale) setM(d) }).catch(() => {})
-    return () => { stale = true }
-  }, [version])
+  const load = useCallback(() => {
+    setError('')
+    return api.mlModel().then(setM).catch((e) => setError(e.message))
+  }, [])
+
+  useEffect(() => { load() }, [load, version])
 
   async function retrain() {
     setBusy(true)
@@ -26,6 +29,7 @@ export default function Model({ version, onDone, onError }) {
     finally { setBusy(false) }
   }
 
+  if (error) return <LoadError title="Could not load the model" message={error} onRetry={load} />
   if (!m) return <div className="card"><div className="empty">Loading model</div></div>
   const lin = m.linear
   const log = m.logistic

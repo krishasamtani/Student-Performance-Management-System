@@ -5,6 +5,7 @@ import GradeBadge from '../components/GradeBadge'
 import RiskMeter from '../components/RiskMeter'
 import LevelPill from '../components/LevelPill'
 import DriverBars from '../components/DriverBars'
+import LoadError from '../components/LoadError'
 
 export default function WhatIf() {
   const [midterm, setMidterm] = useState(60)
@@ -12,6 +13,7 @@ export default function WhatIf() {
   const [result, setResult] = useState(null)
   const [people, setPeople] = useState([])
   const [picked, setPicked] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     api.mlPredictions()
@@ -23,7 +25,9 @@ export default function WhatIf() {
   useEffect(() => {
     let stale = false
     const timer = setTimeout(() => {
-      api.mlPredict(midterm, attendance).then((r) => { if (!stale) setResult(r) }).catch(() => {})
+      api.mlPredict(midterm, attendance)
+        .then((r) => { if (!stale) { setResult(r); setError('') } })
+        .catch((e) => { if (!stale) setError(e.message) })
     }, 120)
     return () => { stale = true; clearTimeout(timer) }
   }, [midterm, attendance])
@@ -67,7 +71,9 @@ export default function WhatIf() {
         </div>
         <div className="card">
           <h2>Model prediction</h2>
-          {!result ? (
+          {error ? (
+            <LoadError title="The model did not answer" message={error} />
+          ) : !result ? (
             <div className="empty">Running the model</div>
           ) : (
             <>

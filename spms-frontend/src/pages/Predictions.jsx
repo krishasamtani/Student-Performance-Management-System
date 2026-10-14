@@ -3,6 +3,7 @@ import { api } from '../api'
 import StatCard from '../components/StatCard'
 import RiskMeter from '../components/RiskMeter'
 import LevelPill from '../components/LevelPill'
+import LoadError from '../components/LoadError'
 
 const sorters = {
   risk: (a, b) => b.prediction.fail_probability - a.prediction.fail_probability,
@@ -13,12 +14,14 @@ const sorters = {
 export default function Predictions({ version }) {
   const [data, setData] = useState(null)
   const [sortBy, setSortBy] = useState('risk')
+  const [error, setError] = useState('')
 
-  useEffect(() => {
-    let stale = false
-    api.mlPredictions().then((d) => { if (!stale) setData(d) }).catch(() => { if (!stale) setData({ students: [], source_label: '' }) })
-    return () => { stale = true }
-  }, [version])
+  const load = () => {
+    setError('')
+    return api.mlPredictions().then(setData).catch((e) => setError(e.message))
+  }
+
+  useEffect(() => { load() }, [version]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const ready = data ? data.students.filter((s) => s.prediction.available).sort(sorters[sortBy]) : []
   const waiting = data ? data.students.filter((s) => !s.prediction.available) : []
@@ -33,7 +36,9 @@ export default function Predictions({ version }) {
         <h1>Predictions</h1>
         <p>Who is likely to struggle in the final exam, and why.</p>
       </div>
-      {data === null ? (
+      {error ? (
+        <LoadError title="Could not load predictions" message={error} onRetry={load} />
+      ) : data === null ? (
         <div className="card"><div className="empty">Loading predictions</div></div>
       ) : (
         <>
