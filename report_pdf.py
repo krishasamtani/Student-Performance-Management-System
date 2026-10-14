@@ -138,6 +138,17 @@ def build_report_pdf(report):
     story.append(Paragraph(
         f"Attendance: {report['attendance_percent']:g}% across {report['days_recorded']} recorded days.", body))
 
+    prediction = report.get("prediction") or {}
+    if prediction.get("available"):
+        small = ParagraphStyle("small", parent=base, fontSize=8, textColor=MUTED, leading=11)
+        story.append(Paragraph("Model outlook", h2))
+        story.append(Paragraph(
+            f"Predicted final score: <b>{prediction['predicted_final']:g}</b> &nbsp;|&nbsp; "
+            f"Chance of failing: <b>{prediction['fail_probability']:g}%</b> "
+            f"({escape(prediction['risk_level'])} risk)", body))
+        story.append(Paragraph(
+            "Estimated by regression models from mid-term marks and attendance. For guidance only.", small))
+
     if at_risk:
         story.append(Paragraph("Areas needing attention", h2))
         for reason in report["risk_reasons"]:
