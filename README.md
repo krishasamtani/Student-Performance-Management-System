@@ -1,4 +1,4 @@
-# Student-Performance-Management-Systemg
+# Student-Performance-Management-System
 
 A web app to manage students, marks and attendance, with analytics, PDF report cards and machine-learning predictions of who may fail the final exam.
 
